@@ -3,7 +3,7 @@ package self.web.easy.excel.util.ctl;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,29 +22,29 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-@Log4j
 @Controller
 @RequestMapping("easyExcelUtil")
-public class EasyExcelUtilController extends BaseController{
+@Slf4j
+public class EasyExcelUtilController extends BaseController {
 
     @GetMapping("getExportData")
     @ResponseBody
-    public Object getExportData(HttpServletResponse response){
+    public Object getExportData(HttpServletResponse response) {
         List<ExportTestModel> list = new ArrayList<>();
-        for(int i = 0 ;i<=1000;i++){
+        for (int i = 0; i <= 1000; i++) {
             list.add(new ExportTestModel(i));
         }
         try {
-            ExcelUtil.writeExcel(response,list,"导出测试","没有设定sheet名称", ExcelTypeEnum.XLSX,ExportTestModel.class);
+            ExcelUtil.writeExcel(response, list, "导出测试", "没有设定sheet名称", ExcelTypeEnum.XLSX, ExportTestModel.class);
         } catch (ExcelException e) {
-            log.info(e);
+            log.info("导出失败", e);
         }
         return success("导出成功");
     }
 
     @PostMapping("importExcel")
     @ResponseBody
-    public Object importExcel(MultipartHttpServletRequest request){
+    public Object importExcel(MultipartHttpServletRequest request) {
         Iterator<String> itr = request.getFileNames();
         String uploadedFile = itr.next();
         List<MultipartFile> files = request.getFiles(uploadedFile);
@@ -52,11 +52,11 @@ public class EasyExcelUtilController extends BaseController{
             return fail("请选择文件！");
         }
         try {
-            List<ExportTestModel> list = ExcelUtil.readExcel(files.get(0),ExportTestModel.class);
+            List<ExportTestModel> list = ExcelUtil.readExcel(files.get(0), ExportTestModel.class);
             return success(JSON.toJSONString(list, SerializerFeature.PrettyFormat));
         } catch (ExcelException e) {
-            log.info(e);
-            return fail(""+e.getMessage());
+            log.info("导入失败", e);
+            return fail("" + e.getMessage());
         }
     }
 }
